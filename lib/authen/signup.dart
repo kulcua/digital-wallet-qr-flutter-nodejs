@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:moneymangement/services/auth.dart';
+import 'package:moneymangement/screens/home.dart';
+import 'package:moneymangement/network_handle.dart';
 
 class SignUp extends StatefulWidget {
   final Function toggleView;
@@ -15,8 +18,15 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   //bool isLoading = false;
 
-  final AuthServices _auth = AuthServices();
+  //final AuthServices _auth = AuthServices();
   final _formKey = GlobalKey<FormState>();
+  NetworkHandler networkHandler = NetworkHandler();
+  final storage = new FlutterSecureStorage();
+
+  TextEditingController _usernameController = TextEditingController();
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
 
   String email = '';
   String password = '';
@@ -27,142 +37,207 @@ class _SignUpState extends State<SignUp> {
   String error = '';
   String id;
 
+  bool validate;
+  bool circular = false;
+
+  @override
+  void initState() {
+    super.initState();
+    validate = true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: SafeArea(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Text(
-                  'Đăng kí',
-                  style: GoogleFonts.muli(
-                      textStyle: TextStyle(
-                        color: Color(0xff5e63b6),
-                        fontSize: 40,
-                        fontWeight: FontWeight.w700,
-                      )),
-                ),
-                SizedBox(
-                  height: 20.0,
-                  width: 150.0,
-                  child: Divider(
-                    color: Color(0xff5e63b6),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 25.0),
-                  child: TextFormField(
-                    validator: (val) => val.isEmpty ? 'Nhập email' : null,
-                    onChanged: (val) {
-                      setState(() => email = val);
-                    },
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Email',
-                    ),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 25.0),
-                  child: TextFormField(
-                    validator: (val) =>
-                    val.length < 6 ? 'Mật khẩu phải hơn 6 kí tự' : null,
-                    onChanged: (val) {
-                      setState(() => password = val);
-                    },
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Mật khẩu',
-                    ),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 25.0),
-                  child: TextFormField(
-                    maxLength: 45,
-                    decoration: InputDecoration(
-                      counterText: '',
-                      border: OutlineInputBorder(),
-                      labelText: 'Tên của bạn',
-                    ),
-                    onChanged: (val) {
-                      setState(() => name = val);
-                    },
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 25.0),
-                  child: TextFormField(
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Số điện thoại',
-                    ),
-                    onChanged: (val) {
-                      setState(() => phone = val);
-                    },
-                  ),
-                ),
-                RaisedButton(
-                    padding: EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 60.0),
-                    color: Color(0xff5e63b6),
-                    onPressed: () async {
-                      if (_formKey.currentState.validate()) {
-                        dynamic result = await _auth
-                            .registerWithEmailAndPassword(
-                            context,
-                            id,
-                            email,
-                            password,
-                            name,
-                            money,
-                            phone,
-                            pin);
-                        if (result == null) {
-                          setState(() {
-                            error = 'Email không tồn tại';
-                          });
-                        }
-                      }
-                    },
-                    child: Text(
-                      "Đăng kí",
-                      style: GoogleFonts.muli(
-                          textStyle: TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          )),)
-                ),
-                FlatButton(
-                  child: Text('Đăng nhập',
-                      style: GoogleFonts.muli(
-                          textStyle: TextStyle(
-                            color: Color(0xff142850),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          )),),
-                  onPressed: () {
-                    widget.toggleView();
-                  },
-                ),
-                SizedBox(height: 12.0),
-                Text(
-                  error,
-                  style: TextStyle(color: Colors.red, fontSize: 14.0),
-                )
-              ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Đăng kí',
+              style: GoogleFonts.muli(
+                  textStyle: TextStyle(
+                color: Color(0xff5e63b6),
+                fontSize: 40,
+                fontWeight: FontWeight.w700,
+              )),
             ),
-          ),
-        ));
+            SizedBox(
+              height: 20.0,
+              width: 150.0,
+              child: Divider(
+                color: Color(0xff5e63b6),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+              child: TextFormField(
+                controller: _emailController,
+                validator: (val) => val.isEmpty ? 'Nhập email' : null,
+                onChanged: (val) {
+                  setState(() => email = val);
+                },
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Email',
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+              child: TextFormField(
+                controller: _passwordController,
+                validator: (val) =>
+                    val.length < 6 ? 'Mật khẩu phải hơn 6 kí tự' : null,
+                onChanged: (val) {
+                  setState(() => password = val);
+                },
+                obscureText: true,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Mật khẩu',
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+              child: TextFormField(
+                controller: _usernameController,
+                maxLength: 45,
+                decoration: InputDecoration(
+                  counterText: '',
+                  border: OutlineInputBorder(),
+                  labelText: 'Tên của bạn',
+                ),
+                onChanged: (val) {
+                  setState(() => name = val);
+                },
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+              child: TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  errorText: validate ? null : error,
+                  border: OutlineInputBorder(),
+                  labelText: 'Số điện thoại',
+                ),
+                onChanged: (val) {
+                  setState(() => phone = val);
+                },
+              ),
+            ),
+            InkWell(
+              onTap: () async {
+                setState(() {
+                  circular = true;
+                });
+                await checkUser();
+                if (_formKey.currentState.validate() && validate) {
+                  // we will send the data to rest server
+                  Map<String, String> data = {
+                    "username": _phoneController.text,
+                    "email": _emailController.text,
+                    "password": _passwordController.text,
+                    "name": _usernameController.text,
+                  };
+                  print(data);
+                  var responseRegister =
+                      await networkHandler.post("/user/register", data);
+
+                  //Login Logic added here
+                  if (responseRegister.statusCode == 200 ||
+                      responseRegister.statusCode == 201) {
+                    Map<String, String> data = {
+                      "username": _usernameController.text,
+                      "password": _passwordController.text,
+                    };
+                    var response =
+                        await networkHandler.post("/user/login", data);
+
+                    if (response.statusCode == 200 ||
+                        response.statusCode == 201) {
+                      Map<String, dynamic> output = json.decode(response.body);
+                      print(output["token"]);
+                      await storage.write(key: "token", value: output["token"]);
+                      setState(() {
+                        validate = true;
+                        circular = false;
+                      });
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Home(),
+                          ),
+                          (route) => false);
+                    } else {
+                      Scaffold.of(context).showSnackBar(
+                          SnackBar(content: Text("Netwok Error")));
+                    }
+                  }
+                  setState(() {
+                    circular = false;
+                  });
+                } else {
+                  setState(() {
+                    circular = false;
+                  });
+                }
+              },
+              child: Container(
+                  width: 150,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Color(0xff5e63b6),
+                  ),
+                  child: Center(
+                    child: circular
+                        ? CircularProgressIndicator()
+                        : Text(
+                            "Đăng kí",
+                            style: GoogleFonts.muli(
+                                textStyle: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                            )),
+                          ),
+                  )),
+            ),
+            Text(
+              error,
+              style: TextStyle(color: Colors.red, fontSize: 14.0),
+            )
+          ],
+        ),
+      ),
+    ));
+  }
+
+  checkUser() async {
+    if (_phoneController.text.length == 0) {
+      setState(() {
+        circular = false;
+        validate = false;
+        error = 'user name cant be empty';
+      });
+    } else {
+      var response = await networkHandler
+          .get("/user/checkusername/${_phoneController.text}");
+      if (response["Status"]) {
+        setState(() {
+          circular = false;
+          validate = false;
+          error = 'user name already taken';
+        });
+      } else {
+        validate = true;
+      }
+    }
   }
 }

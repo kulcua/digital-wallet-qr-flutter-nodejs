@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:moneymangement/wrapper.dart';
+import 'package:moneymangement/authen/signin.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,19 +11,18 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     startTimer();
   }
 
   startTimer() async {
-    var duration = Duration(seconds: 5);
+    var duration = Duration(seconds: 1);
     return Timer(duration, route);
   }
 
   route() {
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => Wrapper()));
+        context, MaterialPageRoute(builder: (context) => SignIn()));
   }
 
   @override
@@ -74,10 +73,11 @@ class _SplashScreenState extends State<SplashScreen> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.muli(
                           textStyle: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          )),)
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      )),
+                    )
                   ],
                 ),
               )

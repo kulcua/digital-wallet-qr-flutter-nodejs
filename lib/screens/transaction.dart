@@ -1,23 +1,18 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:moneymangement/models/transaction_model.dart';
-import 'package:moneymangement/models/user_model.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:moneymangement/screens/result_transaction.dart';
-import 'package:moneymangement/services/database.dart';
-import 'package:moneymangement/utilities/currency.dart';
-import 'package:moneymangement/utilities/constants.dart';
 import 'package:intl/intl.dart';
-import 'package:moneymangement/wrapper.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:moneymangement/models/user_model.dart';
+import 'package:moneymangement/screens/widget/infoReceiver.dart';
+import 'package:moneymangement/screens/widget/verifyPin.dart';
+import 'package:moneymangement/utilities/currency.dart';
 
 class Transaction extends StatefulWidget {
   final String uidReceiver;
-  final User user;
+  final Future<User> userFuture;
 
-  Transaction({this.uidReceiver, this.user});
+  const Transaction({Key key, this.userFuture, this.uidReceiver})
+      : super(key: key);
 
   @override
   _TransactionState createState() => _TransactionState();
@@ -25,247 +20,12 @@ class Transaction extends StatefulWidget {
 
 class _TransactionState extends State<Transaction> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _pinHolder = TextEditingController();
-  bool hasError = false;
-  String currentText = '';
   int money = 0;
-  User userReceiver;
-  String _pin = '';
-  bool _checkPin = false;
-
-  _verifyPin() {
-    print('verify pin');
-    if (_pin == widget.user.pin) {
-      print('vo submit');
-      _submit();
-      print(money);
-      print(widget.user.money);
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ResultTransaction( moneyTrans: money,
-                moneyUser: widget.user.money,
-                nameReceiver: userReceiver.name,
-                idTrans: '3458364913854',)
-          ),
-              (Route<dynamic> route) => false
-
-      );
-    } else {
-      _checkPin = true;
-    }
-  }
-
-  String _resultPin() {
-    if (_checkPin == true) {
-      _pinHolder.clear();
-      return 'Bạn nhập sai mã PIN';
-    }
-    return '';
-  }
-
-  _infoReceiver() {
-    print('info ${userReceiver.name}');
-    return Container(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(
-                    'Tên người nhận',
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    )),
-                  ),
-                  Text(
-                    userReceiver.name,
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    )),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(
-                    'Số điện thoại',
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    )),
-                  ),
-                  Text(
-                    userReceiver.phone,
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    )),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(
-                    'Thời gian giao dịch',
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    )),
-                  ),
-                  Text(
-                    DateFormat('HH:mm dd-MM-yyyy').format(DateTime.now()),
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    )),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  _submit() async {
-    print('vo submit');
-    print('token receiver ${userReceiver.name}');
-    print('token receiver ${userReceiver.pushToken}');
-    // Create transaction
-    TransactionModel trans = TransactionModel(
-      idSender: widget.user.id,
-      idReceiver: userReceiver.id,
-      state: 'success',
-      money: money,
-      time: Timestamp.fromDate(DateTime.now()),
-      typeTransaction: 'Scan QR',
-      pushToken: userReceiver.pushToken
-    );
-
-    DatabaseService.createTransactionSender(trans);
-    DatabaseService.createTransactionReceiver(trans);
-
-    //update money for 2 users
-    usersRef.document(widget.user.id).updateData({'money':  widget.user.money - money});
-    usersRef.document(widget.uidReceiver).updateData({'money': userReceiver.money + money});
-
-    Navigator.pop(context);
-  }
-
-  @override
-  void dispose() {
-    _pinHolder.dispose();
-    super.dispose();
-  }
+  int _userMoney = 0;
+  int _userPin = 0;
 
   @override
   Widget build(BuildContext context) {
-    void _showVerifyPasswordPanel() {
-      showModalBottomSheet(
-          isScrollControlled: true,
-          backgroundColor: Colors.white,
-          context: context,
-          builder: (context) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(
-                    'Nhập mã PIN',
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    )),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 40.0),
-                  child: PinCodeTextField(
-                    controller: _pinHolder,
-                    onChanged: (input) {
-                      print('pin holder $_pinHolder');
-                      _pin = input;
-                      print(_pin);
-                      if (_pin.length == 6) _verifyPin();
-                    },
-                    textStyle:
-                        TextStyle(fontWeight: FontWeight.w100, fontSize: 10),
-                    textInputType: TextInputType.number,
-                    length: 6,
-                    obsecureText: true,
-                    animationType: AnimationType.fade,
-                    pinTheme: PinTheme(
-                      selectedColor: Colors.black,
-                      inactiveColor: Colors.grey,
-                      activeColor: Color(0xff5e63b6),
-                      fieldHeight: 50,
-                      fieldWidth: 40,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20),
-                Text(
-                  _resultPin(),
-                  style: TextStyle(color: Colors.red),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  child: FlatButton.icon(
-                      onPressed: () {},
-                      icon: Icon(Icons.fingerprint),
-                      label: Text(
-                        'Xác thực bằng vân tay',
-                        style: GoogleFonts.muli(
-                            textStyle: TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        )),
-                      )),
-                ),
-                FlatButton(
-                  onPressed: _verifyPin,
-                  child: Text(
-                    'Quên mật khẩu?',
-                    style: GoogleFonts.muli(
-                        textStyle: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    )),
-                  ),
-                )
-              ],
-            );
-          });
-    }
-
     return Form(
       key: _formKey,
       child: Scaffold(
@@ -315,7 +75,7 @@ class _TransactionState extends State<Transaction> {
                         if (money < 1000) {
                           return 'Số tiền phải lớn hơn 1.000';
                         }
-                        if (money > widget.user.money) {
+                        if (money > _userMoney) {
                           return 'Số dư trong ví không đủ';
                         }
                         return null;
@@ -341,19 +101,7 @@ class _TransactionState extends State<Transaction> {
                       )),
                     ),
                   ),
-                  FutureBuilder(
-                      future: usersRef.document(widget.uidReceiver).get(),
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (!snapshot.hasData) {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                        userReceiver = User.fromDoc(snapshot.data);
-                        return Container(
-                          child: _infoReceiver(),
-                        );
-                      }),
+                  InfoReceiver(idReceiver: widget.uidReceiver),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
                     child: Text(
@@ -386,19 +134,33 @@ class _TransactionState extends State<Transaction> {
                                 fontWeight: FontWeight.w400,
                               )),
                             ),
-                            Text(
-                              '${NumberFormat("#,###", "vi").format(widget.user.money)}đ',
-                              style: GoogleFonts.muli(
-                                  textStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                              )),
+                            FutureBuilder<User>(
+                              future: widget.userFuture,
+                              builder: (ctx, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                } else {
+                                  _userPin = snapshot.data.pin;
+                                  _userMoney = snapshot.data.money;
+                                  return Text(
+                                    '${NumberFormat("#,###", "vi").format(snapshot.data.money)}đ',
+                                    style: GoogleFonts.muli(
+                                        textStyle: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                    )),
+                                  );
+                                }
+                              },
                             )
                           ],
                         ),
                         Spacer(),
                         FlatButton(
+                          onPressed: () {},
                           child: Text(
                             'Thay đổi',
                             style: GoogleFonts.muli(
@@ -420,7 +182,15 @@ class _TransactionState extends State<Transaction> {
                       color: Color(0xff5e63b6),
                       onPressed: () async {
                         if (_formKey.currentState.validate()) {
-                          _showVerifyPasswordPanel();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => VerifyPin(
+                                        userMoney: _userMoney,
+                                        userPIN: _userPin,
+                                      )));
+
+                          print("check");
                         }
                       },
                       padding: EdgeInsets.symmetric(

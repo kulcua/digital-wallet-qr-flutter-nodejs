@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:moneymangement/authen/signin.dart';
 import 'package:moneymangement/models/user.dart';
 import 'package:moneymangement/push_notification.dart';
+import 'package:moneymangement/screens/home.dart';
 import 'package:moneymangement/screens/splash_screen.dart';
 import 'package:moneymangement/services/auth.dart';
 import 'package:moneymangement/wrapper.dart';
@@ -8,19 +11,40 @@ import 'package:provider/provider.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
 
+class _MyAppState extends State<MyApp> {
+  //Widget page = SplashScreen();
   PushNotificationsManager _noti = new PushNotificationsManager();
+  //final storage = FlutterSecureStorage();
 
-  // This widget is the root of your application.
+  @override
+  void initState() {
+    super.initState();
+    //checkLogin();
+  }
+
+  // void checkLogin() async {
+  //   String token = await storage.read(key: "token");
+  //   if (token == null) {
+  //     setState(() {
+  //       page = SignIn();
+  //     });
+  //     // } else {
+  //     //   setState(() {
+  //     //     page = Home();
+  //     //   });
+  //   }
+  // }
+
   @override
   Widget build(BuildContext context) {
     _noti.init();
-    return StreamProvider<UserData>.value(
-      value: AuthServices().user,
-      child: MaterialApp(
-        home: SplashScreen(),
-      ),
+    return MaterialApp(
+      home: Wrapper(),
     );
   }
 }

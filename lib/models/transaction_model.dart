@@ -8,7 +8,7 @@ class TransactionModel {
   final int money;
   final Timestamp time;
   final String typeTransaction;
-  final String pushToken;
+  //final String pushToken;
 
   TransactionModel(
       {this.id,
@@ -17,19 +17,17 @@ class TransactionModel {
       this.state,
       this.money,
       this.time,
-      this.typeTransaction,
-      this.pushToken});
+      this.typeTransaction});
+  // this.pushToken});
 
-  factory TransactionModel.fromDoc(DocumentSnapshot doc) {
+  factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
-      id: doc.documentID,
-      idSender: doc['idSender'],
-      idReceiver: doc['idReceiver'],
-      state: doc['state'],
-      money: doc['money'],
-      time: doc['time'],
-      typeTransaction: doc['typeTransaction'],
-      pushToken: doc['pushToken'],
-    );
+        id: json['data']['_id'],
+        idSender: json['data']['idSender'],
+        idReceiver: json['data']['idReceiver'],
+        state: json['data']['state'],
+        money: json['data']['money'],
+        time: json['data']['time'],
+        typeTransaction: json['data']['typetransaction']);
   }
 }

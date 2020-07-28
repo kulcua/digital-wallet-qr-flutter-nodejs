@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/user_model.dart';
-import 'package:moneymangement/services/database.dart';
 import 'package:moneymangement/utilities/constants.dart';
 import 'package:moneymangement/wrapper.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class InputPin extends StatefulWidget {
-
   final User user;
 
   InputPin({this.user});
@@ -17,7 +15,6 @@ class InputPin extends StatefulWidget {
 }
 
 class _InputPinState extends State<InputPin> {
-
   final _formKey = GlobalKey<FormState>();
   String _pin = '';
 
@@ -28,8 +25,8 @@ class _InputPinState extends State<InputPin> {
       usersRef.document(widget.user.id).updateData({'pin': _pin});
 
       print('pin qua home');
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => Wrapper()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => Wrapper()));
     }
   }
 
@@ -83,16 +80,15 @@ class _InputPinState extends State<InputPin> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.0)),
               color: Color(0xff5e63b6),
-              padding:
-              EdgeInsets.symmetric(vertical: 10.0, horizontal: 80.0),
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 80.0),
               child: Text(
                 "Xác nhận",
                 style: GoogleFonts.muli(
                     textStyle: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    )),
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                )),
               ),
             ),
           ],

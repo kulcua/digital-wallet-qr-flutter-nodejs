@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:moneymangement/models/user_model.dart';
-import 'package:moneymangement/screens/home.dart';
 import 'package:moneymangement/wrapper.dart';
 
 class ResultTransaction extends StatefulWidget {
@@ -18,9 +16,7 @@ class ResultTransaction extends StatefulWidget {
   _ResultTransactionState createState() => _ResultTransactionState();
 }
 
-
 class _ResultTransactionState extends State<ResultTransaction> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +58,7 @@ class _ResultTransactionState extends State<ResultTransaction> {
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Text(
-                  'Bạn đã thanh toán thành công ${ NumberFormat("#,###","vi").format(widget.moneyTrans)}đ cho ${widget.nameReceiver}',
+                  'Bạn đã thanh toán thành công ${NumberFormat("#,###", "vi").format(widget.moneyTrans)}đ cho ${widget.nameReceiver}',
                   style: GoogleFonts.muli(
                       textStyle: TextStyle(
                     color: Colors.black,
@@ -93,7 +89,8 @@ class _ResultTransactionState extends State<ResultTransaction> {
                         )),
                       ),
                       Text(
-                        NumberFormat("#,###","vi").format(widget.moneyUser-widget.moneyTrans),
+                        NumberFormat("#,###", "vi")
+                            .format(widget.moneyUser - widget.moneyTrans),
                         style: GoogleFonts.muli(
                             textStyle: TextStyle(
                           color: Colors.black,
@@ -137,12 +134,11 @@ class _ResultTransactionState extends State<ResultTransaction> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.0)),
               color: Color(0xff5e63b6),
-              onPressed: ()
-              {
+              onPressed: () {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => Wrapper()),
-                      (Route<dynamic> route) => false,
+                  (Route<dynamic> route) => false,
                 );
               },
               padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 80.0),

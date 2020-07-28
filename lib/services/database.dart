@@ -1,16 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/widgets.dart';
 import 'package:moneymangement/models/card_model.dart';
 import 'package:moneymangement/models/transaction_model.dart';
 import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/utilities/constants.dart';
 
 class DatabaseService {
-
   static Future<User> getUserWithId(String userId) async {
     DocumentSnapshot userDocSnapshot = await usersRef.document(userId).get();
     if (userDocSnapshot.exists) {
-      return User.fromDoc(userDocSnapshot);
+      //return User.fromDoc(userDocSnapshot);
+      return User.fromJson(userDocSnapshot.data);
     }
     return User();
   }
@@ -33,7 +32,7 @@ class DatabaseService {
       'money': trans.money,
       'time': trans.time,
       'typeTransaction': trans.typeTransaction,
-      'pushToken': trans.pushToken
+      //'pushToken': trans.pushToken
     });
   }
 
@@ -50,29 +49,32 @@ class DatabaseService {
   }
 
   //get user transaction
-  static Future<List<TransactionModel>> getUserTrans(String userId) async {
-    QuerySnapshot userTransSnapshot = await transactionsRef
-        .document(userId)
-        .collection('userTrans')
-        .orderBy('time', descending: true).limit(10).getDocuments();
+  // static Future<List<TransactionModel>> getUserTrans(String userId) async {
+  //   QuerySnapshot userTransSnapshot = await transactionsRef
+  //       .document(userId)
+  //       .collection('userTrans')
+  //       .orderBy('time', descending: true)
+  //       .limit(10)
+  //       .getDocuments();
 
-    List<TransactionModel> trans =
-    userTransSnapshot.documents.map((doc) => TransactionModel.fromDoc(doc)).toList();
-    return trans;
-  }
+  //   List<TransactionModel> trans = userTransSnapshot.documents
+  //       .map((doc) => TransactionModel.fromJson(doc))
+  //       .toList();
+  //   return trans;
+//  }
 
-  static Stream<TransactionModel> getTranStream(String tranId, User user) {
-    return transactionsRef
-        .document(user.id)
-        .collection('userTrans')
-        .document(tranId)
-        .snapshots()
-        .map((snapshot) => TransactionModel.fromDoc(snapshot));
-  }
+  // static Stream<TransactionModel> getTranStream(String tranId, User user) {
+  //   return transactionsRef
+  //       .document(user.id)
+  //       .collection('userTrans')
+  //       .document(tranId)
+  //       .snapshots()
+  //       .map((snapshot) => TransactionModel.fromDoc(snapshot));
+  // }
 
   static Future<QuerySnapshot> searchUser(String phone) {
     Future<QuerySnapshot> user =
-    usersRef.where('phone', isEqualTo: phone).getDocuments();
+        usersRef.where('phone', isEqualTo: phone).getDocuments();
     return user;
   }
 
@@ -87,12 +89,12 @@ class DatabaseService {
   }
 
   static Future<List<CardModel>> getUserCards(String userId) async {
-    QuerySnapshot userCardsSnapshot = await cardsRef
-        .document(userId)
-        .collection('userCards').getDocuments();
+    QuerySnapshot userCardsSnapshot =
+        await cardsRef.document(userId).collection('userCards').getDocuments();
 
-    List<CardModel> cards =
-    userCardsSnapshot.documents.map((doc) => CardModel.fromDoc(doc)).toList();
+    List<CardModel> cards = userCardsSnapshot.documents
+        .map((doc) => CardModel.fromDoc(doc))
+        .toList();
     return cards;
   }
 
@@ -106,14 +108,6 @@ class DatabaseService {
   }
 
   static void deleteCard(CardModel card, String uid) {
-    cardsRef
-        .document(uid)
-        .collection('userCards')
-        .document(card.id)
-        .delete();
+    cardsRef.document(uid).collection('userCards').document(card.id).delete();
   }
 }
-
-
-
-

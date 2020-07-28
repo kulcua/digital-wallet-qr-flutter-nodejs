@@ -1,25 +1,44 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class User {
   final String id;
   final String name;
   final int money;
-  final String phone;
+  final String username;
   final String email;
-  final String pin;
+  final int pin;
   final String pushToken;
 
-  User({this.id, this.email, this.name, this.money, this.phone, this.pin, this.pushToken});
+  User({
+    this.id,
+    this.email,
+    this.name,
+    this.pin,
+    this.money,
+    this.username,
+    this.pushToken,
+  });
 
-  factory User.fromDoc(DocumentSnapshot document) {
+  // factory User.fromDoc(DocumentSnapshot document) {
+  //   return User(
+  //     id: document.documentID,
+  //     email: document['email'],
+  //     name: document['name'],
+  //     money: document['money'],
+  //     phone: document['phone'],
+  //     pin: document['pin'],
+  //     pushToken: document['pushToken']
+  //   );
+  // }
+
+  factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: document.documentID,
-      email: document['email'],
-      name: document['name'],
-      money: document['money'],
-      phone: document['phone'],
-      pin: document['pin'],
-      pushToken: document['pushToken']
+      id: json['data']['_id'],
+      name: json['data']['name'],
+      money: json['data']['money'],
+      pin: json['data']['pin'],
+      username: json['data']['username'],
+      email: json['data']['email'],
     );
+    //pin: '0',
+    //pushToken: null);
   }
 }

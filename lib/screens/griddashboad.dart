@@ -2,20 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/user_model.dart';
-import 'package:moneymangement/screens/cardmanagement.dart';
-import 'package:moneymangement/screens/cash_in.dart';
-import 'package:moneymangement/screens/cash_out.dart';
 import 'package:moneymangement/screens/createQR.dart';
-import 'package:moneymangement/screens/result_transaction.dart';
 import 'package:moneymangement/screens/transaction.dart';
-import 'package:moneymangement/screens/transfer.dart';
-import 'package:moneymangement/utilities/constants.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
 class GridDashboard extends StatefulWidget {
-  final User user;
+  final Future<User> userFuture;
 
-  GridDashboard({this.user});
+  GridDashboard({Key key, this.userFuture}) : super(key: key);
 
   @override
   _GridDashboardState createState() => _GridDashboardState();
@@ -66,50 +60,54 @@ class _GridDashboardState extends State<GridDashboard> {
           return GestureDetector(
             onTap: () async {
               if (data.title == 'Mã QR')
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CreateQR()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CreateQR(
+                              userFuture: widget.userFuture,
+                            )));
               else if (data.title == 'Quét QR') {
-                String result_qr = await scanner.scan();
-                if (result_qr == null) {
-                  print('null r');
-                } else if (result_qr != widget.user.id) {
-                  print('resulltnenenene$result_qr');
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => Transaction(
-                                uidReceiver: result_qr,
-                                user: widget.user,
-                              )));
-                }
-              } else if (data.title == 'Chuyển tiền')
+                String result_Qr = await scanner.scan();
+                // if (result_Qr == null) {
+                //   print('null r');
+                // } else if (result_Qr != widget.user.id) {
+                //   print('resulltnenenene$result_qr');
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => Transfer(
-                              user: widget.user,
+                        builder: (context) => Transaction(
+                              uidReceiver: result_Qr,
+                              userFuture: widget.userFuture,
                             )));
-              else if (data.title == 'Thẻ')
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CardManagement(
-                              user: widget.user,
-                            )));
-              else if (data.title == 'Nạp tiền')
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CashIn(
-                              user: widget.user,
-                            )));
-              else if (data.title == 'Rút tiền')
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CashOut(
-                          user: widget.user,
-                        )));
+              }
+              //else if (data.title == 'Chuyển tiền')
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => Transfer(
+              //               user: widget.user,
+              //             )));
+              // else if (data.title == 'Thẻ')
+              //   Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //           builder: (context) => CardManagement(
+              //                 user: widget.user,
+              //               )));
+              // else if (data.title == 'Nạp tiền')
+              //   Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //           builder: (context) => CashIn(
+              //                 user: widget.user,
+              //               )));
+              // else if (data.title == 'Rút tiền')
+              //   Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //           builder: (context) => CashOut(
+              //                 user: widget.user,
+              //               )));
             },
             child: Container(
                 decoration: BoxDecoration(

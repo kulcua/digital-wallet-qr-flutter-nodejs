@@ -1,40 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:moneymangement/models/user.dart';
 import 'package:moneymangement/models/user_model.dart';
-import 'package:moneymangement/services/database.dart';
-import 'package:provider/provider.dart';
 import 'griddashboad.dart';
 import 'package:google_fonts/google_fonts.dart';
+//import 'package:http/http.dart' as http;
+
+import '../network_handle.dart';
 
 class MainPage extends StatefulWidget {
-  final User user;
+  final Future<User> userFuture;
 
-  MainPage({this.user});
+  const MainPage({Key key, this.userFuture}) : super(key: key);
 
   @override
   _MainPageState createState() => _MainPageState();
+
+  // Future fetchSuccessRatioAndRequiredInterviews() async {
+  // final response = await networkHandler.get();
+  // return json.decode(response.body);
 }
 
 class _MainPageState extends State<MainPage> {
-  User _profileUser;
+  NetworkHandler networkHandler = NetworkHandler();
+  int money = 0;
 
   @override
-  void initState()
-  {
+  void initState() {
     super.initState();
-    _setupProfileUser();
   }
 
-  _setupProfileUser() async {
-    User profileUser = await DatabaseService.getUserWithId(widget.user.id);
-    setState(() {
-      _profileUser = profileUser;
-    });
-  }
-
-  buildProfileInfo(User user) {
-    print('user info ${user.name}');
+  buildProfileInfo(String username) {
+    print('user info $username');
+    if (username == null) {
+      username = "null";
+    }
     return Padding(
         padding: EdgeInsets.only(left: 16, right: 16),
         child: Row(
@@ -55,7 +54,7 @@ class _MainPageState extends State<MainPage> {
                     )),
                   ),
                   Text(
-                    user.name,
+                    username,
                     style: GoogleFonts.muli(
                       textStyle: TextStyle(
                         color: Colors.black,
@@ -73,7 +72,7 @@ class _MainPageState extends State<MainPage> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
                   Text(
-                    NumberFormat("#,###","vi").format(user.money),
+                    NumberFormat("#,###", "vi").format(money),
                     style: GoogleFonts.muli(
                         textStyle: TextStyle(
                       color: Colors.black,
@@ -106,14 +105,27 @@ class _MainPageState extends State<MainPage> {
           SizedBox(
             height: 50,
           ),
-          Container(
-            child: buildProfileInfo(widget.user),
+          FutureBuilder<User>(
+            future: widget.userFuture,
+            builder: (ctx, snapshot) {
+              if (snapshot.hasData) {
+                print(snapshot.data.name);
+                money = snapshot.data.money;
+                return Container(
+                  child: buildProfileInfo(snapshot.data.name),
+                );
+              } else {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
           ),
           SizedBox(
             height: 40,
           ),
           GridDashboard(
-            user: widget.user,
+            userFuture: widget.userFuture,
           ),
         ],
       ),

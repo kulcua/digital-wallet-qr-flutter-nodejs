@@ -1,7 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/push_notification.dart';
+import 'package:moneymangement/screens/home.dart';
 import 'package:moneymangement/services/auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:moneymangement/services/api.dart';
+import 'package:moneymangement/wrapper.dart';
+
+import '../network_handle.dart';
 
 class SignIn extends StatefulWidget {
   final Function toggleView;
@@ -13,13 +22,31 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
+  Future<User> _user;
+  Api api = new Api();
   final AuthServices _auth = AuthServices();
   final _formKey = GlobalKey<FormState>();
   final PushNotificationsManager noti = PushNotificationsManager();
 
+  NetworkHandler networkHandler = NetworkHandler();
+  final storage = new FlutterSecureStorage();
+  String token;
+  TextEditingController _passwordController = TextEditingController();
+  TextEditingController _phoneController = TextEditingController();
+
+  bool validate;
+  bool circular = false;
+
   String email = '';
   String password = '';
   String error = '';
+  User user;
+
+  @override
+  void initState() {
+    super.initState();
+    validate = true;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,19 +74,23 @@ class _SignInState extends State<SignIn> {
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
                 child: TextFormField(
-                  validator: (val) => val.isEmpty ? 'Nhập email' : null,
+                  controller: _phoneController,
+                  validator: (val) =>
+                      val.isEmpty ? 'Nhập số điện thoại' : null,
                   onChanged: (val) {
                     setState(() => email = val);
                   },
                   decoration: InputDecoration(
+                    errorText: validate ? null : error,
                     border: OutlineInputBorder(),
-                    labelText: 'Email',
+                    labelText: 'Số điện thoại',
                   ),
                 ),
               ),
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
                 child: TextFormField(
+                  controller: _passwordController,
                   validator: (val) =>
                       val.length < 6 ? 'Mật khẩu phải hơn 6 kí tự' : null,
                   onChanged: (val) {
@@ -67,39 +98,84 @@ class _SignInState extends State<SignIn> {
                   },
                   obscureText: true,
                   decoration: InputDecoration(
+                    errorText: validate ? null : error,
                     border: OutlineInputBorder(),
                     labelText: 'Mật khẩu',
                   ),
                 ),
               ),
-              RaisedButton(
-                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 60.0),
-                color: Color(0xff5e63b6),
-                onPressed: () async {
-                  noti.init();
-                  if (_formKey.currentState.validate()) {
-                    dynamic result =
-                        await _auth.signInWithEmailAndPassword(email, password);
-                    if (result == null) {
+              InkWell(
+                onTap: () async {
+                  setState(() {
+                    circular = true;
+                  });
+                  if (_formKey.currentState.validate() && validate) {
+                    // we will send the data to rest server
+                    Map<String, String> data = {
+                      "username": _phoneController.text,
+                      "password": _passwordController.text,
+                    };
+
+                    var response =
+                        await networkHandler.post("/user/login", data);
+
+                    if (response.statusCode == 200 ||
+                        response.statusCode == 201) {
+                      Map<String, dynamic> output = json.decode(response.body);
+                      print(output["token"]);
+                      await storage.write(key: "token", value: output["token"]);
+
                       setState(() {
-                        error = 'Vui lòng kiểm tra lại thông tin đăng nhập';
+                        _user = networkHandler.getUser(_phoneController.text);
+                        //print('user setstate ${_user.toString()}');
+                        validate = true;
+                        circular = false;
+                      });
+                      Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Wrapper(
+                                    userFuture: _user,
+                                  )),
+                          (route) => false);
+                    } else {
+                      String output = json.decode(response.body);
+                      setState(() {
+                        validate = false;
+                        error = output;
+                        circular = false;
                       });
                     }
+                    print(data);
                   }
                 },
-                child: Text(
-                  "Đăng nhập",
-                  style: GoogleFonts.muli(
-                      textStyle: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  )),
-                ),
+                child: Container(
+                    width: 150,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Color(0xff5e63b6),
+                    ),
+                    child: Center(
+                      child: circular
+                          ? CircularProgressIndicator()
+                          : Text(
+                              "Đăng nhập",
+                              style: GoogleFonts.muli(
+                                  textStyle: TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                              )),
+                            ),
+                    )),
               ),
               FlatButton.icon(
                   onPressed: () {},
-                  icon: Icon(Icons.fingerprint, color: Color(0xff142850),),
+                  icon: Icon(
+                    Icons.fingerprint,
+                    color: Color(0xff142850),
+                  ),
                   label: Text(
                     'Mở khoá bằng vân tay',
                     style: GoogleFonts.muli(
@@ -120,10 +196,10 @@ class _SignInState extends State<SignIn> {
                       "Quên mật khẩu",
                       style: GoogleFonts.muli(
                           textStyle: TextStyle(
-                            color: Color(0xff142850),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          )),
+                        color: Color(0xff142850),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      )),
                     ),
                   ),
                   FlatButton(
@@ -134,10 +210,10 @@ class _SignInState extends State<SignIn> {
                       "Đăng kí",
                       style: GoogleFonts.muli(
                           textStyle: TextStyle(
-                            color: Color(0xff142850),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          )),
+                        color: Color(0xff142850),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      )),
                     ),
                   )
                 ],
