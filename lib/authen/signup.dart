@@ -3,8 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:moneymangement/screens/home.dart';
+import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/network_handle.dart';
+import 'package:moneymangement/screens/home.dart';
+import 'package:moneymangement/wrapper.dart';
 
 class SignUp extends StatefulWidget {
   final Function toggleView;
@@ -20,7 +22,7 @@ class _SignUpState extends State<SignUp> {
 
   //final AuthServices _auth = AuthServices();
   final _formKey = GlobalKey<FormState>();
-  NetworkHandler networkHandler = NetworkHandler();
+  NetworkHandler _networkHandler = NetworkHandler();
   final storage = new FlutterSecureStorage();
 
   TextEditingController _usernameController = TextEditingController();
@@ -39,6 +41,8 @@ class _SignUpState extends State<SignUp> {
 
   bool validate;
   bool circular = false;
+
+  Future<User> _user;
 
   @override
   void initState() {
@@ -139,28 +143,35 @@ class _SignUpState extends State<SignUp> {
                 await checkUser();
                 if (_formKey.currentState.validate() && validate) {
                   // we will send the data to rest server
-                  Map<String, String> data = {
+                  Map<String, dynamic> data = {
                     "username": _phoneController.text,
                     "email": _emailController.text,
                     "password": _passwordController.text,
                     "name": _usernameController.text,
+                    "pin": 111111,
+                    "money": 10000000,
                   };
                   print(data);
                   var responseRegister =
-                      await networkHandler.post("/user/register", data);
-
+                      await _networkHandler.post("/user/register", data);
+                  print(responseRegister.statusCode);
                   //Login Logic added here
                   if (responseRegister.statusCode == 200 ||
                       responseRegister.statusCode == 201) {
-                    Map<String, String> data = {
-                      "username": _usernameController.text,
+                    setState(() {
+                      _user = _networkHandler.getUser(_phoneController.text);
+                    });
+                    Map<String, dynamic> data = {
+                      "username": _phoneController.text,
                       "password": _passwordController.text,
                     };
                     var response =
-                        await networkHandler.post("/user/login", data);
+                        await _networkHandler.post("/user/login", data);
+                    print("status login ${response.statusCode}");
 
                     if (response.statusCode == 200 ||
                         response.statusCode == 201) {
+                      print("register and login success");
                       Map<String, dynamic> output = json.decode(response.body);
                       print(output["token"]);
                       await storage.write(key: "token", value: output["token"]);
@@ -171,13 +182,16 @@ class _SignUpState extends State<SignUp> {
                       Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Home(),
+                            builder: (context) => Home(
+                              userFuture: _user,
+                            ),
                           ),
                           (route) => false);
-                    } else {
-                      Scaffold.of(context).showSnackBar(
-                          SnackBar(content: Text("Netwok Error")));
                     }
+                    // } else {
+                    //   Scaffold.of(context).showSnackBar(
+                    //       SnackBar(content: Text("Network Error")));
+                    // }
                   }
                   setState(() {
                     circular = false;
@@ -227,7 +241,7 @@ class _SignUpState extends State<SignUp> {
         error = 'user name cant be empty';
       });
     } else {
-      var response = await networkHandler
+      var response = await _networkHandler
           .get("/user/checkusername/${_phoneController.text}");
       if (response["Status"]) {
         setState(() {

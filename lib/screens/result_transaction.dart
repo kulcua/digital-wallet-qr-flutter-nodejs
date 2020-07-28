@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/wrapper.dart';
 
 class ResultTransaction extends StatefulWidget {
@@ -8,9 +9,14 @@ class ResultTransaction extends StatefulWidget {
   final int moneyUser;
   final String nameReceiver;
   final String idTrans;
+  final Future<User> userFuture;
 
   ResultTransaction(
-      {this.moneyTrans, this.moneyUser, this.nameReceiver, this.idTrans});
+      {this.userFuture,
+      this.moneyTrans,
+      this.moneyUser,
+      this.nameReceiver,
+      this.idTrans});
 
   @override
   _ResultTransactionState createState() => _ResultTransactionState();
@@ -89,8 +95,7 @@ class _ResultTransactionState extends State<ResultTransaction> {
                         )),
                       ),
                       Text(
-                        NumberFormat("#,###", "vi")
-                            .format(widget.moneyUser - widget.moneyTrans),
+                        NumberFormat("#,###", "vi").format(widget.moneyUser),
                         style: GoogleFonts.muli(
                             textStyle: TextStyle(
                           color: Colors.black,
@@ -137,7 +142,10 @@ class _ResultTransactionState extends State<ResultTransaction> {
               onPressed: () {
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => Wrapper()),
+                  MaterialPageRoute(
+                      builder: (context) => Wrapper(
+                            userFuture: widget.userFuture,
+                          )),
                   (Route<dynamic> route) => false,
                 );
               },

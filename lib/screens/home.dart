@@ -11,8 +11,9 @@ import 'setting_page.dart';
 
 class Home extends StatefulWidget {
   final Future<User> userFuture;
+  final String uid;
 
-  Home({this.userFuture});
+  Home({this.userFuture, this.uid});
 
   @override
   _HomeState createState() => _HomeState();
@@ -109,7 +110,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    print('home ${widget.userFuture.toString()}');
+    print('home ${widget.uid}');
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Colors.white,
@@ -129,7 +130,10 @@ class _HomeState extends State<Home> {
             // UserPage
             //   user: widget.user,
             // ),
-            Setting(),
+            Setting(
+              userFuture: widget.userFuture,
+              uid: widget.uid,
+            ),
           ],
         ),
       ),

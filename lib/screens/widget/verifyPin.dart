@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:moneymangement/models/user_model.dart';
+import 'package:moneymangement/network_handle.dart';
+import 'package:moneymangement/screens/result_transaction.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class VerifyPin extends StatefulWidget {
+  final Future<User> userFuture;
   final int userMoney;
   final int userPIN;
+  final String uidSender;
+  final String uidReceiver;
+  final int money;
+  final int moneyReceiver;
+  final String nameReceiver;
 
-  VerifyPin({this.userMoney, this.userPIN});
+  VerifyPin(
+      {this.userFuture,
+      this.uidSender,
+      this.uidReceiver,
+      this.userMoney,
+      this.userPIN,
+      this.money,
+      this.moneyReceiver,
+      this.nameReceiver});
   @override
   _VerifyPinState createState() => _VerifyPinState();
 }
@@ -15,22 +32,67 @@ class _VerifyPinState extends State<VerifyPin> {
   TextEditingController _pinHolder = TextEditingController();
   String _pin = '';
   bool _checkPin = false;
+  NetworkHandler _networkHandler = new NetworkHandler();
+
+  _submit() async {
+    print('vo submit');
+    print(widget.uidReceiver);
+    print(widget.uidSender);
+
+    Map<String, dynamic> data = {
+      "idSender": widget.uidSender,
+      "idReceiver": widget.uidReceiver,
+      "money": widget.money,
+      "state": "success",
+      "typetransaction": "chuyen tien"
+    };
+    print(data);
+    var responseTransaction =
+        await _networkHandler.post("/transaction/create", data);
+
+    print(responseTransaction.statusCode);
+    //create Logic added here
+    if (responseTransaction.statusCode == 200 ||
+        responseTransaction.statusCode == 201) {
+      print("create tran success");
+      //update money for 2 users
+      Map<String, int> moneySender = {
+        "money": widget.userMoney - widget.money,
+      };
+      Map<String, int> moneyReceiver = {
+        "money": widget.moneyReceiver + widget.money,
+      };
+      var responseUpdateSender = await _networkHandler.patch(
+          "/user/update/${widget.uidSender}", moneySender);
+      var responseUpdateReceiver = await _networkHandler.patch(
+          "/user/update/${widget.uidReceiver}", moneyReceiver);
+
+      if ((responseUpdateSender.statusCode == 200 ||
+              responseUpdateSender.statusCode == 201) &&
+          (responseUpdateReceiver.statusCode == 200 ||
+              responseUpdateReceiver.statusCode == 201)) {
+        print("update money user success");
+      }
+      //Navigator.pop(context);
+    }
+  }
 
   _verifyPin() {
     print('verify pin');
     if (_pin == widget.userPIN.toString()) {
       print('vo submit');
-      //_submit();
-      // Navigator.pushAndRemoveUntil(
-      //     context,
-      //     MaterialPageRoute(
-      //         builder: (context) => ResultTransaction(
-      //               moneyTrans: money,
-      //               moneyUser: widget.user.money,
-      //               nameReceiver: userReceiver.name,
-      //               idTrans: '3458364913854',
-      //             )),
-      //     (Route<dynamic> route) => false);
+      _submit();
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ResultTransaction(
+                    userFuture: widget.userFuture,
+                    moneyTrans: widget.money,
+                    moneyUser: widget.userMoney - widget.money,
+                    nameReceiver: widget.nameReceiver,
+                    idTrans: '3458364913854',
+                  )),
+          (Route<dynamic> route) => false);
     } else {
       _checkPin = true;
     }

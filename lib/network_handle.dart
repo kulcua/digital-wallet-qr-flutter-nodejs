@@ -22,7 +22,7 @@ class NetworkHandler {
     log.i(response.statusCode);
   }
 
-  Future<http.Response> post(String url, Map<String, String> body) async {
+  Future<http.Response> post(String url, Map<String, dynamic> body) async {
     url = formater(url);
     log.d(body);
     var response = await http.post(
@@ -33,16 +33,34 @@ class NetworkHandler {
     return response;
   }
 
+  Future<http.Response> patch(String url, Map<String, int> body) async {
+    url = formater(url);
+    log.d(body);
+    var response = await http.patch(
+      url,
+      headers: {"Content-type": "application/json"},
+      body: json.encode(body),
+    );
+    return response;
+  }
+
+  Future<http.Response> delete(String url, String id) async {
+    url = formater(url);
+    var response = await http.delete(
+      '$baseurl/delete/$id',
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    return response;
+  }
+
   Future<User> getUser(String phone) async {
-    //print('$phone');
-    //print("token ne $authToken");
     final response = await http.get(
       '$baseurl/user/$phone',
     );
-    //headers: {'Authorization': 'Bearer' + authToken});
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      // final parsed = User.fromJson(json.decode(response.body));
       print(response.statusCode);
       print(response.body);
       return User.fromJson(json.decode(response.body));
@@ -53,15 +71,11 @@ class NetworkHandler {
   }
 
   Future<User> getUserwithId(String id) async {
-    //print('$phone');
-    //print("token ne $authToken");
     final response = await http.get(
       '$baseurl/user/id/$id',
     );
-    //headers: {'Authorization': 'Bearer' + authToken});
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      // final parsed = User.fromJson(json.decode(response.body));
       print(response.statusCode);
       print(response.body);
       return User.fromJson(json.decode(response.body));

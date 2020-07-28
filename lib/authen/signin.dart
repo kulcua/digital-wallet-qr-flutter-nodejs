@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/push_notification.dart';
-import 'package:moneymangement/screens/home.dart';
 import 'package:moneymangement/services/auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:moneymangement/services/api.dart';
 import 'package:moneymangement/wrapper.dart';
 
 import '../network_handle.dart';
@@ -23,12 +21,11 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   Future<User> _user;
-  Api api = new Api();
-  final AuthServices _auth = AuthServices();
+  //final AuthServices _auth = AuthServices();
   final _formKey = GlobalKey<FormState>();
   final PushNotificationsManager noti = PushNotificationsManager();
 
-  NetworkHandler networkHandler = NetworkHandler();
+  NetworkHandler _networkHandler = NetworkHandler();
   final storage = new FlutterSecureStorage();
   String token;
   TextEditingController _passwordController = TextEditingController();
@@ -111,13 +108,15 @@ class _SignInState extends State<SignIn> {
                   });
                   if (_formKey.currentState.validate() && validate) {
                     // we will send the data to rest server
-                    Map<String, String> data = {
+                    Map<String, dynamic> data = {
                       "username": _phoneController.text,
                       "password": _passwordController.text,
                     };
+                    print(data);
 
                     var response =
-                        await networkHandler.post("/user/login", data);
+                        await _networkHandler.post("/user/login", data);
+                    print("login ${response.statusCode}");
 
                     if (response.statusCode == 200 ||
                         response.statusCode == 201) {
@@ -126,7 +125,7 @@ class _SignInState extends State<SignIn> {
                       await storage.write(key: "token", value: output["token"]);
 
                       setState(() {
-                        _user = networkHandler.getUser(_phoneController.text);
+                        _user = _networkHandler.getUser(_phoneController.text);
                         //print('user setstate ${_user.toString()}');
                         validate = true;
                         circular = false;

@@ -3,8 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:moneymangement/models/user_model.dart';
 import 'griddashboad.dart';
 import 'package:google_fonts/google_fonts.dart';
-//import 'package:http/http.dart' as http;
-
 import '../network_handle.dart';
 
 class MainPage extends StatefulWidget {
@@ -14,10 +12,6 @@ class MainPage extends StatefulWidget {
 
   @override
   _MainPageState createState() => _MainPageState();
-
-  // Future fetchSuccessRatioAndRequiredInterviews() async {
-  // final response = await networkHandler.get();
-  // return json.decode(response.body);
 }
 
 class _MainPageState extends State<MainPage> {

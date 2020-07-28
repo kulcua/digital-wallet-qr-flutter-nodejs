@@ -68,10 +68,6 @@ class _GridDashboardState extends State<GridDashboard> {
                             )));
               else if (data.title == 'Quét QR') {
                 String result_Qr = await scanner.scan();
-                // if (result_Qr == null) {
-                //   print('null r');
-                // } else if (result_Qr != widget.user.id) {
-                //   print('resulltnenenene$result_qr');
                 Navigator.push(
                     context,
                     MaterialPageRoute(

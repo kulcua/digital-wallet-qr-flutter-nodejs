@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:moneymangement/models/user_model.dart';
-import 'package:moneymangement/screens/widget/infoReceiver.dart';
+import 'package:moneymangement/network_handle.dart';
 import 'package:moneymangement/screens/widget/verifyPin.dart';
 import 'package:moneymangement/utilities/currency.dart';
 
@@ -20,9 +20,13 @@ class Transaction extends StatefulWidget {
 
 class _TransactionState extends State<Transaction> {
   final _formKey = GlobalKey<FormState>();
-  int money = 0;
-  int _userMoney = 0;
+  NetworkHandler _networkHandler = new NetworkHandler();
+  int money;
+  int _userMoney;
   int _userPin = 0;
+  String _userId;
+  int _moneyReceiver;
+  String _nameReceiver;
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +105,105 @@ class _TransactionState extends State<Transaction> {
                       )),
                     ),
                   ),
-                  InfoReceiver(idReceiver: widget.uidReceiver),
+                  FutureBuilder<User>(
+                    future: _networkHandler.getUserwithId(widget.uidReceiver),
+                    builder: (ctx, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else {
+                        _moneyReceiver = snapshot.data.money;
+                        _nameReceiver = snapshot.data.name;
+                        return Container(
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(
+                                        'Tên người nhận',
+                                        style: GoogleFonts.muli(
+                                            textStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        )),
+                                      ),
+                                      Text(
+                                        snapshot.data.name,
+                                        style: GoogleFonts.muli(
+                                            textStyle: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        )),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10.0),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(
+                                        'Số điện thoại',
+                                        style: GoogleFonts.muli(
+                                            textStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        )),
+                                      ),
+                                      Text(
+                                        snapshot.data.username,
+                                        style: GoogleFonts.muli(
+                                            textStyle: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        )),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 10.0),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(
+                                        'Thời gian giao dịch',
+                                        style: GoogleFonts.muli(
+                                            textStyle: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        )),
+                                      ),
+                                      Text(
+                                        DateFormat('HH:mm dd-MM-yyyy')
+                                            .format(DateTime.now()),
+                                        style: GoogleFonts.muli(
+                                            textStyle: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        )),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
                     child: Text(
@@ -142,6 +244,7 @@ class _TransactionState extends State<Transaction> {
                                     child: CircularProgressIndicator(),
                                   );
                                 } else {
+                                  _userId = snapshot.data.id;
                                   _userPin = snapshot.data.pin;
                                   _userMoney = snapshot.data.money;
                                   return Text(
@@ -186,8 +289,14 @@ class _TransactionState extends State<Transaction> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => VerifyPin(
+                                        userFuture: widget.userFuture,
+                                        uidSender: _userId,
+                                        uidReceiver: widget.uidReceiver,
                                         userMoney: _userMoney,
                                         userPIN: _userPin,
+                                        money: money,
+                                        moneyReceiver: _moneyReceiver,
+                                        nameReceiver: _nameReceiver,
                                       )));
 
                           print("check");

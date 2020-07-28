@@ -1,17 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/option_model.dart';
-import 'package:moneymangement/services/auth.dart';
+import 'package:moneymangement/models/user_model.dart';
+import 'package:moneymangement/wrapper.dart';
 
 class Setting extends StatefulWidget {
+  final Future<User> userFuture;
+  final String uid;
+
+  Setting({this.userFuture, this.uid});
+
   @override
   _SettingState createState() => _SettingState();
 }
 
 class _SettingState extends State<Setting> {
-  final AuthServices _auth = AuthServices();
+  final storage = FlutterSecureStorage();
+  //final AuthServices _auth = AuthServices();
   int _selectedOption = 0;
+  //NetworkHandler _networkHandler = new NetworkHandler();
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +75,14 @@ class _SettingState extends State<Setting> {
                 setState(() {
                   _selectedOption = index - 1;
                 });
-                if (_selectedOption == index -1) {
-                  if(_selectedOption == 5)
-                    {
-                      await _auth.signOut();
-                    }
+                if (_selectedOption == index - 1) {
+                  if (_selectedOption == 5) {
+                    await storage.deleteAll();
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => Wrapper()),
+                        (route) => false);
+                  }
                 }
               },
             ),
