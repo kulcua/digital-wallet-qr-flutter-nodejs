@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:moneymangement/authen/signin.dart';
-import 'package:moneymangement/models/user.dart';
+
 import 'package:moneymangement/push_notification.dart';
-import 'package:moneymangement/screens/home.dart';
-import 'package:moneymangement/screens/splash_screen.dart';
-import 'package:moneymangement/services/auth.dart';
+
 import 'package:moneymangement/wrapper.dart';
-import 'package:provider/provider.dart';
 
 void main() => runApp(MyApp());
 

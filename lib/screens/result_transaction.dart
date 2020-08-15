@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:moneymangement/models/user_model.dart';
+import 'package:moneymangement/network_handle.dart';
 import 'package:moneymangement/wrapper.dart';
 
 class ResultTransaction extends StatefulWidget {
@@ -10,19 +11,24 @@ class ResultTransaction extends StatefulWidget {
   final String nameReceiver;
   final String idTrans;
   final Future<User> userFuture;
+  final String userPhone;
 
   ResultTransaction(
       {this.userFuture,
       this.moneyTrans,
       this.moneyUser,
       this.nameReceiver,
-      this.idTrans});
+      this.idTrans,
+      this.userPhone});
 
   @override
   _ResultTransactionState createState() => _ResultTransactionState();
 }
 
 class _ResultTransactionState extends State<ResultTransaction> {
+  Future<User> _user;
+  NetworkHandler _networkHandler = new NetworkHandler();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,12 +145,16 @@ class _ResultTransactionState extends State<ResultTransaction> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10.0)),
               color: Color(0xff5e63b6),
-              onPressed: () {
+              onPressed: () async {
+                setState(() {
+                  _user = _networkHandler.getUser(widget.userPhone);
+                });
+                await _user;
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
                       builder: (context) => Wrapper(
-                            userFuture: widget.userFuture,
+                            userFuture: _user,
                           )),
                   (Route<dynamic> route) => false,
                 );

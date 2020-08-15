@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:moneymangement/models/transaction_model.dart';
 
 import 'models/user_model.dart';
 
@@ -59,11 +60,15 @@ class NetworkHandler {
     final response = await http.get(
       '$baseurl/user/$phone',
     );
-
     if (response.statusCode == 200 || response.statusCode == 201) {
       print(response.statusCode);
       print(response.body);
-      return User.fromJson(json.decode(response.body));
+      if (json.decode(response.body)['data'] != null) {
+        return User.fromJson(json.decode(response.body)['data']);
+      } else {
+        print('helo do null k');
+        return null;
+      }
     } else {
       print(response.statusCode);
       throw Exception("Error");
@@ -78,7 +83,22 @@ class NetworkHandler {
     if (response.statusCode == 200 || response.statusCode == 201) {
       print(response.statusCode);
       print(response.body);
-      return User.fromJson(json.decode(response.body));
+      return User.fromJson(json.decode(response.body)['data']);
+    } else {
+      print(response.statusCode);
+      throw Exception("Error");
+    }
+  }
+
+  Future<TransactionModel> getTranwithId(String id) async {
+    final response = await http.get(
+      '$baseurl/transaction/$id',
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print(response.statusCode);
+      print(response.body);
+      return TransactionModel.fromJson(json.decode(response.body)['data']);
     } else {
       print(response.statusCode);
       throw Exception("Error");

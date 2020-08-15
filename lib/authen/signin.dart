@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/push_notification.dart';
-import 'package:moneymangement/services/auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moneymangement/wrapper.dart';
 
@@ -42,7 +42,7 @@ class _SignInState extends State<SignIn> {
   @override
   void initState() {
     super.initState();
-    validate = true;
+    validate = false;
   }
 
   @override
@@ -53,6 +53,7 @@ class _SignInState extends State<SignIn> {
         body: SafeArea(
             child: Form(
           key: _formKey,
+          autovalidate: validate,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -71,6 +72,11 @@ class _SignInState extends State<SignIn> {
               Container(
                 margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
                 child: TextFormField(
+                  maxLength: 10,
+                  inputFormatters: [
+                    LengthLimitingTextInputFormatter(10),
+                  ],
+                  keyboardType: TextInputType.number,
                   controller: _phoneController,
                   validator: (val) =>
                       val.isEmpty ? 'Nhập số điện thoại' : null,
@@ -78,7 +84,7 @@ class _SignInState extends State<SignIn> {
                     setState(() => email = val);
                   },
                   decoration: InputDecoration(
-                    errorText: validate ? null : error,
+                    //errorText: validate ? null : error,
                     border: OutlineInputBorder(),
                     labelText: 'Số điện thoại',
                   ),
@@ -95,18 +101,24 @@ class _SignInState extends State<SignIn> {
                   },
                   obscureText: true,
                   decoration: InputDecoration(
-                    errorText: validate ? null : error,
+                    //errorText: validate ? null : error,
                     border: OutlineInputBorder(),
                     labelText: 'Mật khẩu',
                   ),
                 ),
               ),
+              SizedBox(height: 4.0),
+              Text(
+                error,
+                style: TextStyle(color: Colors.red, fontSize: 14.0),
+              ),
+              SizedBox(height: 4.0),
               InkWell(
                 onTap: () async {
                   setState(() {
                     circular = true;
                   });
-                  if (_formKey.currentState.validate() && validate) {
+                  if (_formKey.currentState.validate()) {
                     // we will send the data to rest server
                     Map<String, dynamic> data = {
                       "username": _phoneController.text,
@@ -130,6 +142,7 @@ class _SignInState extends State<SignIn> {
                         validate = true;
                         circular = false;
                       });
+                      await _user;
                       Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
@@ -146,6 +159,11 @@ class _SignInState extends State<SignIn> {
                       });
                     }
                     print(data);
+                  } else {
+                    setState(() {
+                      circular = false;
+                      validate = false;
+                    });
                   }
                 },
                 child: Container(
@@ -217,11 +235,6 @@ class _SignInState extends State<SignIn> {
                   )
                 ],
               ),
-              SizedBox(height: 12.0),
-              Text(
-                error,
-                style: TextStyle(color: Colors.red, fontSize: 14.0),
-              )
             ],
           ),
         )),

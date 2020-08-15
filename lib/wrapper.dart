@@ -7,7 +7,10 @@ import 'models/user_model.dart';
 class Wrapper extends StatefulWidget {
   final Future<User> userFuture;
 
-  const Wrapper({Key key, this.userFuture}) : super(key: key);
+  const Wrapper({
+    Key key,
+    this.userFuture,
+  }) : super(key: key);
   @override
   _WrapperState createState() => _WrapperState();
 }
@@ -36,24 +39,18 @@ class _WrapperState extends State<Wrapper> {
     if (widget.userFuture == null || checkToken == false)
       return Authentication();
     else
-      // return Home(
-      //   userFuture: widget.userFuture,
-      // );
       return FutureBuilder<User>(
           future: widget.userFuture,
           builder: (ctx, snapshot) {
             print("wrapper id user ${snapshot.data.id}");
-            if (!snapshot.hasData) {
+            print("wrapper money user ${snapshot.data.money}");
+            if (!snapshot.hasData || snapshot.data == null) {
               return Center(
                 child: CircularProgressIndicator(),
               );
+            } else {
+              return Home(userFuture: widget.userFuture, uid: snapshot.data.id);
             }
-            //print("wrapper id user ${snapshot.data.id}");
-            else
-              return Home(
-                userFuture: widget.userFuture,
-                uid: snapshot.data.id,
-              );
           });
   }
 }

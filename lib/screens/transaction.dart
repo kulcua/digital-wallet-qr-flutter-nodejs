@@ -27,6 +27,7 @@ class _TransactionState extends State<Transaction> {
   String _userId;
   int _moneyReceiver;
   String _nameReceiver;
+  String _userPhone;
 
   @override
   Widget build(BuildContext context) {
@@ -247,6 +248,7 @@ class _TransactionState extends State<Transaction> {
                                   _userId = snapshot.data.id;
                                   _userPin = snapshot.data.pin;
                                   _userMoney = snapshot.data.money;
+                                  _userPhone = snapshot.data.username;
                                   return Text(
                                     '${NumberFormat("#,###", "vi").format(snapshot.data.money)}đ',
                                     style: GoogleFonts.muli(
@@ -297,6 +299,7 @@ class _TransactionState extends State<Transaction> {
                                         money: money,
                                         moneyReceiver: _moneyReceiver,
                                         nameReceiver: _nameReceiver,
+                                        userPhone: _userPhone,
                                       )));
 
                           print("check");

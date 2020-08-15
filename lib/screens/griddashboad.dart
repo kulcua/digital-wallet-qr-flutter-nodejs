@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/screens/createQR.dart';
 import 'package:moneymangement/screens/transaction.dart';
+import 'package:moneymangement/screens/transfer.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
 class GridDashboard extends StatefulWidget {
@@ -75,14 +76,13 @@ class _GridDashboardState extends State<GridDashboard> {
                               uidReceiver: result_Qr,
                               userFuture: widget.userFuture,
                             )));
-              }
-              //else if (data.title == 'Chuyển tiền')
-              // Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) => Transfer(
-              //               user: widget.user,
-              //             )));
+              } else if (data.title == 'Chuyển tiền')
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Transfer(
+                              userFuture: widget.userFuture,
+                            )));
               // else if (data.title == 'Thẻ')
               //   Navigator.push(
               //       context,

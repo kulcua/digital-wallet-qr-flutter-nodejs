@@ -5,6 +5,9 @@ import 'package:bottom_navy_bar/bottom_navy_bar.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/user_model.dart';
+import 'package:moneymangement/screens/historytransaction.dart';
+import 'package:moneymangement/screens/userpage.dart';
+import 'package:moneymangement/utilities/constants.dart';
 import 'mainpage.dart';
 import 'setting_page.dart';
 //import 'package:moneymangement/services/api.dart';
@@ -124,12 +127,12 @@ class _HomeState extends State<Home> {
             MainPage(
               userFuture: widget.userFuture,
             ),
-            // History(
-            //   user: widget.user,
-            // ),
-            // UserPage
-            //   user: widget.user,
-            // ),
+            HistoryTransaction(
+              uid: widget.uid,
+            ),
+            UserPage(
+              userFuture: widget.userFuture,
+            ),
             Setting(
               userFuture: widget.userFuture,
               uid: widget.uid,

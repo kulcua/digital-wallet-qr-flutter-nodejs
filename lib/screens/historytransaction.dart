@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/transaction_model.dart';
-import 'package:moneymangement/network_handle.dart';
+import 'package:http/http.dart' as http;
 import 'package:moneymangement/screens/widget/trantile.dart';
 
 class HistoryTransaction extends StatefulWidget {
@@ -16,34 +16,49 @@ class HistoryTransaction extends StatefulWidget {
 }
 
 class _HistoryTransactionState extends State<HistoryTransaction> {
-  NetworkHandler _networkHandler = new NetworkHandler();
+  List<TransactionModel> _trans = [];
 
   void initState() {
     super.initState();
+    _setupTrans();
+
+    print("uid : ${widget.uid}");
   }
 
-  Future<List<TransactionModel>> _getTrans() async {
-    var data = await _networkHandler.get("/transaction/sender/${widget.uid}");
+  Future<List<TransactionModel>> fetchTrans(String uid) async {
+    var response = await http
+        .get("http://e-wallet-qr.herokuapp.com/transaction/user/$uid");
 
-    var jsonData = json.decode(data.body);
-
-    List<TransactionModel> transactions = [];
-
-    for (var u in jsonData) {
-      TransactionModel tran = TransactionModel(
-          id: u["id"],
-          idSender: u["idSender"],
-          idReceiver: u["idReceiver"],
-          state: u["state"],
-          money: u["money"],
-          time: u["time"],
-          typeTransaction: u["typeTransaction"]);
-      transactions.add(tran);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final result = json.decode(response.body);
+      List<TransactionModel> trans = (result['data'] as List)
+          .map((data) => TransactionModel.fromJson(data))
+          .toList();
+      return trans;
+    } else {
+      throw Exception('Failed to load data');
     }
+  }
 
-    print(transactions.length);
+  _setupTrans() async {
+    List<TransactionModel> trans = await fetchTrans(widget.uid);
+    setState(() {
+      _trans = trans;
+    });
+  }
 
-    return transactions;
+  _buildUserTrans() {
+    List<TranTile> tranList = [];
+    _trans.forEach((tran) {
+      print(tran.id);
+      tranList.add(
+        TranTile(
+          uid: widget.uid,
+          tranid: tran.id,
+        ),
+      );
+    });
+    return Column(children: tranList);
   }
 
   @override
@@ -61,34 +76,15 @@ class _HistoryTransactionState extends State<HistoryTransaction> {
           ),
           backgroundColor: Color(0xff5e63b6),
         ),
-        body: Container(
-            child: FutureBuilder(
-                future: _getTrans(),
-                builder: (BuildContext context, AsyncSnapshot snapshot) {
-                  print(snapshot.data);
-                  if (snapshot.data == null) {
-                    return CircularProgressIndicator();
-                  } else {
-                    return ListView.builder(
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          // leading: CircleAvatar(
-                          //   backgroundImage: NetworkImage(
-                          //     snapshot.data[index].picture
-                          //   ),
-                          // ),
-                          title: Text(snapshot.data[index].name),
-                          subtitle: Text(snapshot.data[index].email),
-                          onTap: () {
-                            // Navigator.push(context,
-                            //   new MaterialPageRoute(builder: (context) => DetailPage(snapshot.data[index]))
-                            // );
-                          },
-                        );
-                      },
-                    );
-                  }
-                })));
+        body: RefreshIndicator(
+          onRefresh: () async {
+            _setupTrans();
+          },
+          child: ListView(
+            children: <Widget>[
+              _buildUserTrans(),
+            ],
+          ),
+        ));
   }
 }

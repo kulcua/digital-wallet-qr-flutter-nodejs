@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:moneymangement/models/user_model.dart';
 import 'package:moneymangement/network_handle.dart';
 import 'package:moneymangement/screens/home.dart';
-import 'package:moneymangement/wrapper.dart';
 
 class SignUp extends StatefulWidget {
   final Function toggleView;
@@ -120,19 +119,21 @@ class _SignUpState extends State<SignUp> {
                 },
               ),
             ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
-              child: TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  errorText: validate ? null : error,
-                  border: OutlineInputBorder(),
-                  labelText: 'Số điện thoại',
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25.0),
+                child: TextFormField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    errorText: validate ? null : error,
+                    border: OutlineInputBorder(),
+                    labelText: 'Số điện thoại',
+                  ),
+                  onChanged: (val) {
+                    setState(() => phone = val);
+                  },
                 ),
-                onChanged: (val) {
-                  setState(() => phone = val);
-                },
               ),
             ),
             InkWell(

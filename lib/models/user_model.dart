@@ -31,12 +31,12 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['data']['_id'],
-      name: json['data']['name'],
-      money: json['data']['money'],
-      pin: json['data']['pin'],
-      username: json['data']['username'],
-      email: json['data']['email'],
+      id: json['_id'],
+      name: json['name'],
+      money: json['money'],
+      pin: json['pin'],
+      username: json['username'],
+      email: json['email'],
     );
     //pin: '0',
     //pushToken: null);

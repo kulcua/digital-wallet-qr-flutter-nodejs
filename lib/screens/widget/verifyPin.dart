@@ -14,6 +14,7 @@ class VerifyPin extends StatefulWidget {
   final int money;
   final int moneyReceiver;
   final String nameReceiver;
+  final String userPhone;
 
   VerifyPin(
       {this.userFuture,
@@ -23,7 +24,8 @@ class VerifyPin extends StatefulWidget {
       this.userPIN,
       this.money,
       this.moneyReceiver,
-      this.nameReceiver});
+      this.nameReceiver,
+      this.userPhone});
   @override
   _VerifyPinState createState() => _VerifyPinState();
 }
@@ -91,6 +93,7 @@ class _VerifyPinState extends State<VerifyPin> {
                     moneyUser: widget.userMoney - widget.money,
                     nameReceiver: widget.nameReceiver,
                     idTrans: '3458364913854',
+                    userPhone: widget.userPhone,
                   )),
           (Route<dynamic> route) => false);
     } else {

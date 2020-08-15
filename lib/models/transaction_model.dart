@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class TransactionModel {
   final String id;
   final String idSender;
   final String idReceiver;
   final String state;
   final int money;
-  final Timestamp time;
+  final String time;
   final String typeTransaction;
   //final String pushToken;
 
@@ -22,12 +20,12 @@ class TransactionModel {
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
-        id: json['data']['_id'],
-        idSender: json['data']['idSender'],
-        idReceiver: json['data']['idReceiver'],
-        state: json['data']['state'],
-        money: json['data']['money'],
-        time: json['data']['time'],
-        typeTransaction: json['data']['typetransaction']);
+        id: json['_id'],
+        idSender: json['idSender'],
+        idReceiver: json['idReceiver'],
+        state: json['state'],
+        money: json['money'],
+        time: json['time'],
+        typeTransaction: json['typetransaction']);
   }
 }

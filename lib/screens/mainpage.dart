@@ -8,7 +8,7 @@ import '../network_handle.dart';
 class MainPage extends StatefulWidget {
   final Future<User> userFuture;
 
-  const MainPage({Key key, this.userFuture}) : super(key: key);
+  MainPage({this.userFuture});
 
   @override
   _MainPageState createState() => _MainPageState();
@@ -16,14 +16,13 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   NetworkHandler networkHandler = NetworkHandler();
-  int money = 0;
 
   @override
   void initState() {
     super.initState();
   }
 
-  buildProfileInfo(String username) {
+  buildProfileInfo(String username, int money) {
     print('user info $username');
     if (username == null) {
       username = "null";
@@ -100,21 +99,20 @@ class _MainPageState extends State<MainPage> {
             height: 50,
           ),
           FutureBuilder<User>(
-            future: widget.userFuture,
-            builder: (ctx, snapshot) {
-              if (snapshot.hasData) {
-                print(snapshot.data.name);
-                money = snapshot.data.money;
-                return Container(
-                  child: buildProfileInfo(snapshot.data.name),
-                );
-              } else {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            },
-          ),
+              future: widget.userFuture,
+              builder: (ctx, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else {
+                  print("snapshot data money ${snapshot.data.money}");
+                  return Container(
+                    child: buildProfileInfo(
+                        snapshot.data.name, snapshot.data.money),
+                  );
+                }
+              }),
           SizedBox(
             height: 40,
           ),
